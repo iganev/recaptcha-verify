@@ -1,0 +1,28 @@
+[package]
+name = "recaptcha-verify"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ivan Ganev <iganev@cytec.bg>"]
+description = "Recaptcha verification helper"
+keywords = ["recaptcha", "verify", "helper"]
+categories = ["web-programming", "api-bindings"]
+homepage = "https://github.com/iganev/recaptcha-verify"
+repository = "https://github.com/iganev/recaptcha-verify"
+documentation = "https://docs.rs/crate/recaptcha-verify/"
+readme = "README.md"
+license = "MIT"
+
+[features]
+default = ["rustls-tls"]
+
+default-tls = ["reqwest/default-tls"]
+native-tls = ["reqwest/native-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
+
+[dependencies]
+reqwest =  { version = "^0.11", default-features = false, features = ["json"] }
+serde = { version = "^1", features = ["derive"] }
+serde_json = { version = "^1" }
+
+[dev-dependencies]
+tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
