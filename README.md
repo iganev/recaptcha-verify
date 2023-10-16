@@ -1,3 +1,8 @@
+[![Crates.io](https://img.shields.io/crates/v/recaptcha-verify?color=4d76ae)](https://crates.io/crates/recaptcha-verify)
+[![API](https://docs.rs/recaptcha-verify/badge.svg)](https://docs.rs/recaptcha-verify)
+[![Build Status](https://github.com/iganev/recaptcha-verify/workflows/CI/badge.svg)](https://github.com/iganev/recaptcha-verify/actions)
+[![dependency status](https://deps.rs/repo/github/iganev/recaptcha-verify/status.svg)](https://deps.rs/repo/github/iganev/recaptcha-verify)
+
 # recaptcha-verify
 Simple, bare-minimum recaptcha verifier helper
 
