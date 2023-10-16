@@ -3,6 +3,7 @@ use std::net::IpAddr;
 
 const POST_URL: &str = "https://www.google.com/recaptcha/api/siteverify";
 
+/// Error returned when ReCaptcha verification fails
 #[derive(Debug, Clone, PartialEq)]
 pub enum RecaptchaError {
     Unknown(Option<String>),
@@ -32,13 +33,14 @@ impl TryFrom<String> for RecaptchaError {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct RecaptchaResult {
-    pub success: bool,
-    pub challenge_ts: Option<String>,
-    pub hostname: Option<String>,
-    pub apk_package_name: Option<String>,
+#[allow(dead_code)]
+struct RecaptchaResult {
+    success: bool,
+    challenge_ts: Option<String>,
+    hostname: Option<String>,
+    apk_package_name: Option<String>,
     #[serde(rename(deserialize = "error-codes"))]
-    pub error_codes: Option<Vec<String>>,
+    error_codes: Option<Vec<String>>,
 }
 
 /// # Verify ReCaptcha
