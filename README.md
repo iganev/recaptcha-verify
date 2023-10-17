@@ -9,7 +9,7 @@ Simple, bare-minimum recaptcha verifier helper
 ## Quick Start
 
 This library is supposed to be a (near) drop-in replacement for [recaptcha-rs](https://crates.io/crates/recaptcha).
-The usage is nearly (bot not completely) identical. 
+The usage is nearly (but not completely) identical. 
 Here however we use `rustls` by default, but you could choose from the following features:  
 - default-tls - enforces default-tls feature in reqwest
 - native-tls - enforces native-tls feature in reqwest
