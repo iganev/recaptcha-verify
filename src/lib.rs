@@ -4,10 +4,10 @@ use std::net::IpAddr;
 const POST_URL: &str = "https://www.google.com/recaptcha/api/siteverify";
 
 /// Error returned when ReCaptcha verification fails
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub enum RecaptchaError {
     Unknown(Option<String>),
-    HttpError(String),
+    HttpError(reqwest::Error),
     MissingInputSecret,
     InvalidInputSecret,
     MissingInputResponse,
@@ -85,9 +85,9 @@ struct RecaptchaResult {
 ///     let res = recaptcha_verify(recaptcha_secret_key, recaptcha_token, ip).await;
 ///
 ///     if res.is_ok() {
-///         assert_eq!(res, Ok(()));
+///         assert!(matches!(res, Ok(())));
 ///     } else {
-///         assert_eq!(res, Err(RecaptchaError::InvalidInputSecret));
+///         assert!(matches!(res, Err(RecaptchaError::InvalidInputSecret)));
 ///     }
 /// }
 /// ```
@@ -111,7 +111,7 @@ pub async fn verify(
         .form(&params)
         .send()
         .await
-        .map_err(|e| RecaptchaError::HttpError(e.to_string()))?;
+        .map_err(RecaptchaError::HttpError)?;
 
     if let Ok(result) = response.json::<RecaptchaResult>().await {
         if result.success {
@@ -136,6 +136,6 @@ mod tests {
     async fn it_works() {
         let res: Result<(), RecaptchaError> = verify("test", "test", None).await;
 
-        assert_eq!(res, Err(RecaptchaError::InvalidInputSecret));
+        assert!(matches!(res, Err(RecaptchaError::InvalidInputSecret)));
     }
 }
