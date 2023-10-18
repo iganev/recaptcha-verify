@@ -17,6 +17,11 @@ Here however we use `rustls` by default, but you could choose from the following
 
 Another key difference is that this library uses tokio 1 as dev dependency and more recent versions of reqwest and serde. 
 
+## Changes in 0.1.3
+
+One important change in 0.1.3 is the fact that instead of string we now pass the whole `reqwest::Error` in `RecaptchaError::HttpError`.
+If you previously used the String containing variant, please migrate to using `reqwest::Error`.  
+
 ## Example
 
 ```rust
