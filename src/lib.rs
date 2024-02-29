@@ -130,12 +130,22 @@ pub async fn verify(
 
 #[cfg(test)]
 mod tests {
+    use std::net::Ipv4Addr;
     use super::*;
+
+    /// Check https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+    const GOOGLE_MOCK_SECRET:&str = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
 
     #[tokio::test]
     async fn it_works() {
         let res: Result<(), RecaptchaError> = verify("test", "test", None).await;
 
         assert!(matches!(res, Err(RecaptchaError::InvalidInputSecret)));
+
+        let localhost_v4 = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+        let res: Result<(), RecaptchaError> = verify(GOOGLE_MOCK_SECRET, "test", Some(&localhost_v4)).await;
+
+        assert!(matches!(res, Ok(())));
+
     }
 }

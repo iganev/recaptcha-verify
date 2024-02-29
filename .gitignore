@@ -18,6 +18,7 @@ Cargo.lock
 
 /target
 /Cargo.lock
+tarpaulin-report.html
 
 # IntelliJ Shit
 .idea/
