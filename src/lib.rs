@@ -130,25 +130,44 @@ pub async fn verify(
 
 #[cfg(test)]
 mod tests {
-    use std::net::Ipv4Addr;
     use super::*;
+    use std::net::Ipv4Addr;
 
     /// Check https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
-    const GOOGLE_MOCK_SECRET:&str = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
+    const GOOGLE_MOCK_SECRET: &str = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
 
-    const UNKNOWN_ERROR:&str = "trololo-detected";
+    const UNKNOWN_ERROR: &str = "trololo-detected";
 
     #[tokio::test]
     async fn it_works() {
+        assert!(matches!(
+            "missing-input-secret".to_string().try_into(),
+            Ok(RecaptchaError::MissingInputSecret)
+        ));
+        assert!(matches!(
+            "invalid-input-secret".to_string().try_into(),
+            Ok(RecaptchaError::InvalidInputSecret)
+        ));
+        assert!(matches!(
+            "missing-input-response".to_string().try_into(),
+            Ok(RecaptchaError::MissingInputResponse)
+        ));
+        assert!(matches!(
+            "invalid-input-response".to_string().try_into(),
+            Ok(RecaptchaError::InvalidInputResponse)
+        ));
+        assert!(matches!(
+            "bad-request".to_string().try_into(),
+            Ok(RecaptchaError::BadRequest)
+        ));
+        assert!(matches!(
+            "timeout-or-duplicate".to_string().try_into(),
+            Ok(RecaptchaError::TimeoutOrDuplicate)
+        ));
 
-        assert!(matches!("missing-input-secret".to_string().try_into(), Ok(RecaptchaError::MissingInputSecret)));
-        assert!(matches!("invalid-input-secret".to_string().try_into(), Ok(RecaptchaError::InvalidInputSecret)));
-        assert!(matches!("missing-input-response".to_string().try_into(), Ok(RecaptchaError::MissingInputResponse)));
-        assert!(matches!("invalid-input-response".to_string().try_into(), Ok(RecaptchaError::InvalidInputResponse)));
-        assert!(matches!("bad-request".to_string().try_into(), Ok(RecaptchaError::BadRequest)));
-        assert!(matches!("timeout-or-duplicate".to_string().try_into(), Ok(RecaptchaError::TimeoutOrDuplicate)));
-
-        assert!(matches!(UNKNOWN_ERROR.to_string().try_into(), Ok(RecaptchaError::Unknown(Some(s))) if s == UNKNOWN_ERROR ));
+        assert!(
+            matches!(UNKNOWN_ERROR.to_string().try_into(), Ok(RecaptchaError::Unknown(Some(s))) if s == UNKNOWN_ERROR )
+        );
 
         //
 
@@ -159,9 +178,9 @@ mod tests {
         //
 
         let localhost_v4 = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
-        let res: Result<(), RecaptchaError> = verify(GOOGLE_MOCK_SECRET, "test", Some(&localhost_v4)).await;
+        let res: Result<(), RecaptchaError> =
+            verify(GOOGLE_MOCK_SECRET, "test", Some(&localhost_v4)).await;
 
         assert!(matches!(res, Ok(())));
-
     }
 }
