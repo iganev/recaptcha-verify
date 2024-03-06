@@ -118,7 +118,7 @@ pub async fn verify(
             return Ok(());
         } else if let Some(errs) = result.error_codes {
             return Err(errs
-                .get(0)
+                .first()
                 .ok_or(RecaptchaError::Unknown(None))?
                 .to_string()
                 .try_into()?);
