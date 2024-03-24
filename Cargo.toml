@@ -1,6 +1,6 @@
 [package]
 name = "recaptcha-verify"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Ivan Ganev <iganev@cytec.bg>"]
 description = "Recaptcha verification helper"
@@ -20,9 +20,9 @@ native-tls = ["reqwest/native-tls"]
 rustls-tls = ["reqwest/rustls-tls"]
 
 [dependencies]
-reqwest =  { version = "^0.11", default-features = false, features = ["json"] }
+reqwest =  { version = "^0.12", default-features = false, features = ["json"] }
 serde = { version = "^1", features = ["derive"] }
 serde_json = { version = "^1" }
 
 [dev-dependencies]
-tokio = { version = "^1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "^1.36", features = ["macros", "rt-multi-thread"] }
