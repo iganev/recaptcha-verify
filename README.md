@@ -1,7 +1,7 @@
 [![Crates.io](https://img.shields.io/crates/v/recaptcha-verify?color=4d76ae)](https://crates.io/crates/recaptcha-verify)
 [![API](https://docs.rs/recaptcha-verify/badge.svg)](https://docs.rs/recaptcha-verify)
 [![dependency status](https://deps.rs/repo/github/iganev/recaptcha-verify/status.svg)](https://deps.rs/repo/github/iganev/recaptcha-verify)
-[![Build and Test](https://github.com/iganev/recaptcha-verify/actions/workflows/rust.yml/badge.svg)](https://github.com/iganev/recaptcha-verify/actions/workflows/rust.yml)
+[![build and test](https://github.com/iganev/recaptcha-verify/actions/workflows/rust.yml/badge.svg)](https://github.com/iganev/recaptcha-verify/actions/workflows/rust.yml)
 [![codecov](https://codecov.io/github/iganev/recaptcha-verify/graph/badge.svg?token=B5P2TAV5BB)](https://codecov.io/github/iganev/recaptcha-verify)
 
 
