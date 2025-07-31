@@ -87,7 +87,7 @@ struct RecaptchaResult {
 ///     if res.is_ok() {
 ///         assert!(matches!(res, Ok(())));
 ///     } else {
-///         assert!(matches!(res, Err(RecaptchaError::InvalidInputSecret)));
+///         assert!(matches!(res, Err(RecaptchaError::InvalidInputResponse)));
 ///     }
 /// }
 /// ```
@@ -173,7 +173,7 @@ mod tests {
 
         let res: Result<(), RecaptchaError> = verify("test", "test", None).await;
 
-        assert!(matches!(res, Err(RecaptchaError::InvalidInputSecret)));
+        assert!(matches!(res, Err(RecaptchaError::InvalidInputResponse)));
 
         //
 
