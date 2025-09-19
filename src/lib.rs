@@ -1,137 +1,22 @@
-use serde::Deserialize;
-use std::net::IpAddr;
+mod ent;
+mod v3;
 
-const POST_URL: &str = "https://www.google.com/recaptcha/api/siteverify";
+#[allow(deprecated)]
+pub use v3::verify;
+pub use v3::verify_v3;
+pub use v3::RecaptchaError;
 
-/// Error returned when ReCaptcha verification fails
-#[derive(Debug)]
-pub enum RecaptchaError {
-    Unknown(Option<String>),
-    HttpError(reqwest::Error),
-    MissingInputSecret,
-    InvalidInputSecret,
-    MissingInputResponse,
-    InvalidInputResponse,
-    BadRequest,
-    TimeoutOrDuplicate,
-}
-
-impl TryFrom<String> for RecaptchaError {
-    type Error = RecaptchaError;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Ok(match value.as_str() {
-            "missing-input-secret" => RecaptchaError::MissingInputSecret,
-            "invalid-input-secret" => RecaptchaError::InvalidInputSecret,
-            "missing-input-response" => RecaptchaError::MissingInputResponse,
-            "invalid-input-response" => RecaptchaError::InvalidInputResponse,
-            "bad-request" => RecaptchaError::BadRequest,
-            "timeout-or-duplicate" => RecaptchaError::TimeoutOrDuplicate,
-            s => RecaptchaError::Unknown(Some(s.to_string())),
-        })
-    }
-}
-
-#[derive(Deserialize, Debug, Clone)]
-#[allow(dead_code)]
-struct RecaptchaResult {
-    success: bool,
-    challenge_ts: Option<String>,
-    hostname: Option<String>,
-    apk_package_name: Option<String>,
-    #[serde(rename(deserialize = "error-codes"))]
-    error_codes: Option<Vec<String>>,
-}
-
-/// # Verify ReCaptcha
-///
-/// This is supposed to be a (near) drop-in replacement for recaptcha-rs but using more recent
-/// versions of tokio, reqwest and serde.
-///
-/// ## Minimalist Example
-///
-/// Basic starting point.
-///
-/// ```ignore
-/// use recaptcha_verify::{RecaptchaError, verify};
-///
-/// let res:Result<(), RecaptchaError> = verify("secret", "token", None).await;
-/// ```
-///
-/// ## Full Example
-///
-/// End-to-end real-life use with actix and result handling.
-///
-/// ```rust
-/// #[tokio::main]
-/// async fn main() {
-///     use std::net::IpAddr;
-///     use recaptcha_verify::{RecaptchaError, verify as recaptcha_verify};
-///
-///     let recaptcha_secret_key = "secret"; // from env or config
-///     let recaptcha_token = "token"; // from request
-///     let realip_remote_addr = Some("1.1.1.1"); // actix_web::info::ConnectionInfo
-///
-///     let ip_addr;
-///     let mut ip: Option<&IpAddr> = None;
-///
-///     if let Some(remote_addr) = realip_remote_addr {
-///         if let Ok(ip_addr_res) = remote_addr.to_string().parse::<IpAddr>() {
-///             ip_addr = ip_addr_res;
-///             ip = Some(&ip_addr);
-///         }
-///     }
-///
-///     let res = recaptcha_verify(recaptcha_secret_key, recaptcha_token, ip).await;
-///
-///     if res.is_ok() {
-///         assert!(matches!(res, Ok(())));
-///     } else {
-///         assert!(matches!(res, Err(RecaptchaError::InvalidInputResponse)));
-///     }
-/// }
-/// ```
-///
-pub async fn verify(
-    secret: &str,
-    response: &str,
-    remoteip: Option<&IpAddr>,
-) -> Result<(), RecaptchaError> {
-    let mut params = vec![("secret", secret), ("response", response)];
-
-    let ip_str;
-    if let Some(ip) = remoteip {
-        ip_str = ip.to_string();
-        params.push(("remoteip", ip_str.as_str()));
-    }
-
-    let client = reqwest::Client::new();
-    let response = client
-        .post(POST_URL)
-        .form(&params)
-        .send()
-        .await
-        .map_err(RecaptchaError::HttpError)?;
-
-    if let Ok(result) = response.json::<RecaptchaResult>().await {
-        if result.success {
-            return Ok(());
-        } else if let Some(errs) = result.error_codes {
-            return Err(errs
-                .first()
-                .ok_or(RecaptchaError::Unknown(None))?
-                .to_string()
-                .try_into()?);
-        }
-    }
-
-    Err(RecaptchaError::Unknown(None))
-}
+pub use ent::verify_enterprise;
+pub use ent::verify_enterprise_detailed;
+pub use ent::RecaptchaEntError;
+pub use ent::RecaptchaEntResult;
+pub use ent::RecaptchaInvalidReason;
+pub use ent::RecaptchaUserAction;
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::net::Ipv4Addr;
+    use std::net::{IpAddr, Ipv4Addr};
 
     /// Check https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
     const GOOGLE_MOCK_SECRET: &str = "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe";
@@ -139,7 +24,8 @@ mod tests {
     const UNKNOWN_ERROR: &str = "trololo-detected";
 
     #[tokio::test]
-    async fn it_works() {
+    #[allow(deprecated)]
+    async fn it_works_v3() {
         assert!(matches!(
             "missing-input-secret".to_string().try_into(),
             Ok(RecaptchaError::MissingInputSecret)
@@ -182,5 +68,138 @@ mod tests {
             verify(GOOGLE_MOCK_SECRET, "test", Some(&localhost_v4)).await;
 
         assert!(matches!(res, Ok(())));
+
+        //
+
+        let res: Result<(), RecaptchaError> = verify_v3("test", "test", None).await;
+
+        assert!(matches!(res, Err(RecaptchaError::InvalidInputResponse)));
+
+        //
+
+        let localhost_v4 = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+        let res: Result<(), RecaptchaError> =
+            verify_v3(GOOGLE_MOCK_SECRET, "test", Some(&localhost_v4)).await;
+
+        assert!(matches!(res, Ok(())));
+    }
+
+    #[tokio::test]
+    #[allow(deprecated)]
+    async fn it_works_ent() {
+        assert!(matches!(
+            RecaptchaUserAction::Signup.to_string().try_into(),
+            Ok(RecaptchaUserAction::Signup)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::Login.to_string().try_into(),
+            Ok(RecaptchaUserAction::Login)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::PasswordReset.to_string().try_into(),
+            Ok(RecaptchaUserAction::PasswordReset)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::GetPrice.to_string().try_into(),
+            Ok(RecaptchaUserAction::GetPrice)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::CartAdd.to_string().try_into(),
+            Ok(RecaptchaUserAction::CartAdd)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::CartView.to_string().try_into(),
+            Ok(RecaptchaUserAction::CartView)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::PaymentAdd.to_string().try_into(),
+            Ok(RecaptchaUserAction::PaymentAdd)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::Checkout.to_string().try_into(),
+            Ok(RecaptchaUserAction::Checkout)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::TransactionConfirmed
+                .to_string()
+                .try_into(),
+            Ok(RecaptchaUserAction::TransactionConfirmed)
+        ));
+        assert!(matches!(
+            RecaptchaUserAction::PlaySong.to_string().try_into(),
+            Ok(RecaptchaUserAction::PlaySong)
+        ));
+        assert!(matches!(
+            <std::string::String as TryInto<RecaptchaUserAction>>::try_into(UNKNOWN_ERROR.to_string()),
+            Err(RecaptchaEntError::InvalidUserAction(v)) if v == UNKNOWN_ERROR
+        ));
+
+        //
+
+        assert!(matches!(
+            RecaptchaInvalidReason::Automation.to_string().try_into(),
+            Ok(RecaptchaInvalidReason::Automation)
+        ));
+        assert!(matches!(
+            RecaptchaInvalidReason::UnexpectedEnvironment
+                .to_string()
+                .try_into(),
+            Ok(RecaptchaInvalidReason::UnexpectedEnvironment)
+        ));
+        assert!(matches!(
+            RecaptchaInvalidReason::TooMuchTraffic
+                .to_string()
+                .try_into(),
+            Ok(RecaptchaInvalidReason::TooMuchTraffic)
+        ));
+        assert!(matches!(
+            RecaptchaInvalidReason::UnexpectedUsagePatterns
+                .to_string()
+                .try_into(),
+            Ok(RecaptchaInvalidReason::UnexpectedUsagePatterns)
+        ));
+        assert!(matches!(
+            RecaptchaInvalidReason::LowConfidenceScore
+                .to_string()
+                .try_into(),
+            Ok(RecaptchaInvalidReason::LowConfidenceScore)
+        ));
+        assert!(matches!(
+            RecaptchaInvalidReason::Malformed.to_string().try_into(),
+            Ok(RecaptchaInvalidReason::Malformed)
+        ));
+
+        assert!(matches!(
+            <std::string::String as TryInto<RecaptchaInvalidReason>>::try_into("crap".to_string()),
+            Err(RecaptchaEntError::UnknownReason)
+        ));
+
+        //
+
+        let result = verify_enterprise_detailed(
+            "project",
+            "api_key",
+            "site_key",
+            "token",
+            Some(RecaptchaUserAction::Login),
+        )
+        .await;
+
+        assert!(
+            matches!(result, Err(RecaptchaEntError::ApiError(api_error)) if api_error.error.code >= 400)
+        );
+
+        let result = verify_enterprise(
+            "project",
+            "api_key",
+            "site_key",
+            "token",
+            Some(RecaptchaUserAction::Login),
+        )
+        .await;
+
+        assert!(
+            matches!(result, Err(RecaptchaEntError::ApiError(api_error)) if api_error.error.code >= 400)
+        );
     }
 }

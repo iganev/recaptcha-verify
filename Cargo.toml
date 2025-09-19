@@ -1,9 +1,9 @@
 [package]
 name = "recaptcha-verify"
-version = "0.1.6"
+version = "0.2.0"
 edition = "2021"
 authors = ["Ivan Ganev <iganev@cytec.bg>"]
-description = "Recaptcha verification helper"
+description = "Recaptcha verification helper for v2/v3 and enterprise"
 keywords = ["recaptcha", "verify", "helper"]
 categories = ["web-programming", "api-bindings"]
 homepage = "https://github.com/iganev/recaptcha-verify"

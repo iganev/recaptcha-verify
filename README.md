@@ -6,7 +6,7 @@
 
 
 # recaptcha-verify
-Simple, bare-minimum recaptcha verifier helper
+Simple, bare-minimum recaptcha verifier helper compatible with v2, v3 and Enterprise.
 
 ## Quick Start
 
@@ -24,12 +24,36 @@ Another key difference is that this library uses tokio 1 as dev dependency and m
 One important change in 0.1.3 is the fact that instead of string we now pass the whole `reqwest::Error` in `RecaptchaError::HttpError`.
 If you previously used the String containing variant, please migrate to using `reqwest::Error`.  
 
+## Changes in 0.2.0
+
+Introducing enterprise support. Legacy v2 and v3 verification should continue to work and is backwards compatible.  
+The `verify` function is **deprecated** and should be replaced with `verify_v3` to avoid deprecation warnings.  
+Enterprise support is provided by `recaptcha_verify::verify_enterprise` and works in a similar way to `verify_v3`.  
+For more granular control over the response properties you can use `recaptcha_verify::verify_enterprise_detailed`.  
+
 ## Example
+
+ReCAPTCHA v2 and v3:  
 
 ```rust
 use recaptcha_verify::{RecaptchaError, verify};
 
 let res:Result<(), RecaptchaError> = verify("secret", "token", None).await;
+```
+
+ReCAPTCHA Enterprise:  
+
+```rust
+use recaptcha_verify::{RecaptchaEntError, verify_enterprise};
+
+let res:Result<(), RecaptchaEntError> = verify_enterprise(
+        "project",                        // your google cloud project identifier
+        "api_key",                        // your google cloud project API key with access to the recaptcha service
+        "site_key",                       // your site key setup within the same project
+        "token",                          // the user challenge token
+        Some(RecaptchaUserAction::Login), // optional action
+    )
+    .await;
 ```
 
 ## License
