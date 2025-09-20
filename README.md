@@ -47,11 +47,11 @@ ReCAPTCHA Enterprise:
 use recaptcha_verify::{RecaptchaEntError, verify_enterprise};
 
 let res:Result<(), RecaptchaEntError> = verify_enterprise(
-        "project",                        // your google cloud project identifier
-        "api_key",                        // your google cloud project API key with access to the recaptcha service
-        "site_key",                       // your site key setup within the same project
-        "token",                          // the user challenge token
-        Some(RecaptchaUserAction::Login), // optional action
+        "project",     // your google cloud project identifier
+        "api_key",     // your google cloud project API key with access to the recaptcha service
+        "site_key",    // your site key setup within the same project
+        "token",       // the user challenge token
+        Some("login"), // optional action
     )
     .await;
 ```
