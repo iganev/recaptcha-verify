@@ -10,8 +10,6 @@ pub use ent::verify_enterprise;
 pub use ent::verify_enterprise_detailed;
 pub use ent::RecaptchaEntError;
 pub use ent::RecaptchaEntResult;
-pub use ent::RecaptchaInvalidReason;
-pub use ent::RecaptchaUserAction;
 
 #[cfg(test)]
 mod tests {
@@ -87,116 +85,16 @@ mod tests {
     #[tokio::test]
     #[allow(deprecated)]
     async fn it_works_ent() {
-        assert!(matches!(
-            RecaptchaUserAction::Signup.to_string().try_into(),
-            Ok(RecaptchaUserAction::Signup)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::Login.to_string().try_into(),
-            Ok(RecaptchaUserAction::Login)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::PasswordReset.to_string().try_into(),
-            Ok(RecaptchaUserAction::PasswordReset)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::GetPrice.to_string().try_into(),
-            Ok(RecaptchaUserAction::GetPrice)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::CartAdd.to_string().try_into(),
-            Ok(RecaptchaUserAction::CartAdd)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::CartView.to_string().try_into(),
-            Ok(RecaptchaUserAction::CartView)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::PaymentAdd.to_string().try_into(),
-            Ok(RecaptchaUserAction::PaymentAdd)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::Checkout.to_string().try_into(),
-            Ok(RecaptchaUserAction::Checkout)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::TransactionConfirmed
-                .to_string()
-                .try_into(),
-            Ok(RecaptchaUserAction::TransactionConfirmed)
-        ));
-        assert!(matches!(
-            RecaptchaUserAction::PlaySong.to_string().try_into(),
-            Ok(RecaptchaUserAction::PlaySong)
-        ));
-        assert!(matches!(
-            <std::string::String as TryInto<RecaptchaUserAction>>::try_into(UNKNOWN_ERROR.to_string()),
-            Err(RecaptchaEntError::InvalidUserAction(v)) if v == UNKNOWN_ERROR
-        ));
-
-        //
-
-        assert!(matches!(
-            RecaptchaInvalidReason::Automation.to_string().try_into(),
-            Ok(RecaptchaInvalidReason::Automation)
-        ));
-        assert!(matches!(
-            RecaptchaInvalidReason::UnexpectedEnvironment
-                .to_string()
-                .try_into(),
-            Ok(RecaptchaInvalidReason::UnexpectedEnvironment)
-        ));
-        assert!(matches!(
-            RecaptchaInvalidReason::TooMuchTraffic
-                .to_string()
-                .try_into(),
-            Ok(RecaptchaInvalidReason::TooMuchTraffic)
-        ));
-        assert!(matches!(
-            RecaptchaInvalidReason::UnexpectedUsagePatterns
-                .to_string()
-                .try_into(),
-            Ok(RecaptchaInvalidReason::UnexpectedUsagePatterns)
-        ));
-        assert!(matches!(
-            RecaptchaInvalidReason::LowConfidenceScore
-                .to_string()
-                .try_into(),
-            Ok(RecaptchaInvalidReason::LowConfidenceScore)
-        ));
-        assert!(matches!(
-            RecaptchaInvalidReason::Malformed.to_string().try_into(),
-            Ok(RecaptchaInvalidReason::Malformed)
-        ));
-
-        assert!(matches!(
-            <std::string::String as TryInto<RecaptchaInvalidReason>>::try_into("crap".to_string()),
-            Err(RecaptchaEntError::UnknownReason)
-        ));
-
-        //
-
-        let result = verify_enterprise_detailed(
-            "project",
-            "api_key",
-            "site_key",
-            "token",
-            Some(RecaptchaUserAction::Login),
-        )
-        .await;
+        let result =
+            verify_enterprise_detailed("project", "api_key", "site_key", "token", Some("login"))
+                .await;
 
         assert!(
             matches!(result, Err(RecaptchaEntError::ApiError(api_error)) if api_error.error.code >= 400)
         );
 
-        let result = verify_enterprise(
-            "project",
-            "api_key",
-            "site_key",
-            "token",
-            Some(RecaptchaUserAction::Login),
-        )
-        .await;
+        let result =
+            verify_enterprise("project", "api_key", "site_key", "token", Some("test")).await;
 
         assert!(
             matches!(result, Err(RecaptchaEntError::ApiError(api_error)) if api_error.error.code >= 400)
